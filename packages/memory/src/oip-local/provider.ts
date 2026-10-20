@@ -314,14 +314,11 @@ export class OipLocalMemoryProvider implements MemoryProvider {
     turnId?: string;
     sessionId?: string;
   }): Promise<string> {
-    // Deduplicate: check if a node with the same L0 text already exists via FTS
-    const hits = this.sqlite.searchFts(write.l0, 3);
-    for (const hit of hits) {
-      const rev = await this.packages.readCurrent(hit.record_id);
-      if (rev && rev.text?.trim() === write.l0.trim()) {
-        return hit.record_id;
-      }
-    }
+    // No dedup at storage layer — the LLM checks memory context before writing.
+    // The extraction prompt tells the LLM: check active context and search the graph
+    // for existing nodes covering the same claim before calling write_node.
+    // Cases where the LLM decides to refine an existing node use the extract mechanism
+    // (two writes: one for the new child, one overwriting the parent with replaces_l0_in).
 
     const now = new Date().toISOString();
     const drefs: Record<string, unknown> = {};

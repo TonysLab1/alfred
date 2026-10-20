@@ -72,6 +72,11 @@ export interface StructuredMemoryPort {
     assertionsCreated: number;
     notesCreated: number;
   }>;
+  writeNode?(write: {
+    l0: string;
+    parentId?: string;
+    slotType?: string;
+  }): Promise<string>;
 }
 
 /** Live weather forecast for conversational asks (Open-Meteo). */

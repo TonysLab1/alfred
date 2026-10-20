@@ -133,6 +133,25 @@ export const UPDATE_REMINDER_TOOL = {
   },
 } as const;
 
+export const WRITE_NODE_TOOL = {
+  name: "write_node",
+  description:
+    "Write a propositional node to the memory graph. " +
+    "The L0 sentence must be one proposition with one main verb, grammatically complete. " +
+    "If the claim is already in the graph (check memory context), the handler will deduplicate. " +
+    "Set parentId to link this node under an existing node. Set slotType to indicate the relationship to the parent " +
+    "(SOURCE, ELABORATION, CAUSE, MEANS, CONSEQUENCE, PRECONDITION, TEMPORAL, etc.).",
+  parameters: {
+    type: "object",
+    properties: {
+      l0: { type: "string", description: "One proposition, one main verb, a complete sentence." },
+      parentId: { type: "string", description: "Optional DID of the parent node." },
+      slotType: { type: "string", description: "Optional. How this node relates to its parent." },
+    },
+    required: ["l0"],
+  },
+};
+
 /**
  * Persist durable people/facts/relations from conversation as Entity + Assertion
  * (same shape as knowledge ingest), not as assistant-turn Observations.

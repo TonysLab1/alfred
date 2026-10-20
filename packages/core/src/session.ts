@@ -267,6 +267,19 @@ export class SessionOrchestrator {
    */
   async handleUserUtterance(input: UserUtteranceInput): Promise<void> {
     this.turnExtraSystem = input.extraSystem;
+
+    // Graph-writing instructions: extract propositional nodes from conversation
+    this.turnExtraSystem = (this.turnExtraSystem || '') + '\n'
+    + 'After you respond, consider whether the turn introduced new information that should be recorded as graph nodes.\n'
+    + 'Write propositional nodes using the write_node tool. Each node must be exactly one proposition, one verb, grammatically complete.\n'
+    + 'Check: does a node already say this? Check memory context. If yes, skip.\n'
+    + 'Do not write nodes for phatic chat ("yes", "okay", "thanks").\n'
+    + 'Use parentId to link new information under an existing node if there is a clear parent.\n'
+    + 'Use slotType to indicate how the child relates to its parent (SOURCE, ELABORATION, CAUSE, MEANS, CONSEQUENCE, etc.).\n'
+    + 'If no parent exists, write without parentId.\n'
+    + 'If existing information only lives as a clause inside another node\'s L0 and needs its own node, write the extracted child and write the updated parent L0 using replaces_l0_in.\n'
+    + 'Do not use write_node for information already captured by remember_memory or present in the active context.\n'
+';
     this.turnImageDataUrls = input.imageDataUrls;
     this.turnOnToken = input.onToken;
     const state = this.fsm.getState();

@@ -14,6 +14,7 @@ import {
   GET_WEATHER_ALERTS_TOOL,
   GET_WEATHER_FORECAST_TOOL,
   REMEMBER_MEMORY_TOOL,
+  WRITE_NODE_TOOL,
   SEARCH_ARCHIVE_TOOL,
   OPEN_ARCHIVE_RECORD_TOOL,
   ARCHIVE_NEIGHBORS_TOOL,
@@ -1741,6 +1742,7 @@ export class VoiceSessionController {
     const caps = ["delegate_task"];
     if (this.deps.reminders) caps.push("update_reminder");
     if (this.deps.structuredMemory) caps.push("remember_memory");
+    if (this.deps.structuredMemory) caps.push("write_node");
     if (this.deps.weather) caps.push("get_weather_forecast");
     if (this.deps.news) {
       caps.push("get_news_headlines");
@@ -1808,6 +1810,7 @@ export class VoiceSessionController {
     }> = [DELEGATE_TASK_TOOL];
     if (this.deps.reminders) tools.push(UPDATE_REMINDER_TOOL);
     if (this.deps.structuredMemory) tools.push(REMEMBER_MEMORY_TOOL);
+    if (this.deps.structuredMemory) tools.push(WRITE_NODE_TOOL);
     if (this.deps.weather) tools.push(GET_WEATHER_FORECAST_TOOL);
     if (this.deps.news) {
       tools.push(GET_NEWS_HEADLINES_TOOL);
@@ -1889,6 +1892,13 @@ export class VoiceSessionController {
     }
     if (toolCall?.toolName === "update_reminder" && this.deps.reminders) {
       const ack = await this.applyReminderUpdate(toolCall.toolArgs ?? {}, dueReminders);
+      const spoken = text.trim();
+      const out = spoken || ack;
+      if (opts?.streamCaptions) await this.publishCaptionReveal(out, true);
+      return out;
+    }
+    if (toolCall?.toolName === "write_node" && this.deps.structuredMemory) {
+      const ack = await this.applyWriteNode(toolCall.toolArgs ?? {});
       const spoken = text.trim();
       const out = spoken || ack;
       if (opts?.streamCaptions) await this.publishCaptionReveal(out, true);
@@ -2186,6 +2196,24 @@ export class VoiceSessionController {
     } catch (err) {
       console.error("[voice] get_metals_price failed:", err);
       return "I couldn't get that metals price just now.";
+    }
+  }
+
+  private async applyWriteNode(args: Record<string, unknown>): Promise<string> {
+    const port = this.deps.structuredMemory;
+    if (!port) return "I couldn't write that node right now.";
+    const l0 = typeof args.l0 === "string" && args.l0.trim() ? args.l0.trim() : "";
+    if (!l0) return "I need a sentence to write as a node.";
+    try {
+      const result = await port.writeNode!({
+        l0,
+        parentId: typeof args.parentId === "string" && args.parentId.trim() ? args.parentId.trim() : undefined,
+        slotType: typeof args.slotType === "string" && args.slotType.trim() ? args.slotType.trim() : undefined,
+      });
+      return result ? "Wrote that memory node." : "Wrote that memory node.";
+    } catch (err) {
+      console.error("[voice] write_node failed:", err);
+      return "I couldn't write that memory node just now.";
     }
   }
 

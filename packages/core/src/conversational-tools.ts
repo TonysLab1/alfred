@@ -12,6 +12,7 @@ import {
   GET_WEATHER_ALERTS_TOOL,
   GET_WEATHER_FORECAST_TOOL,
   REMEMBER_MEMORY_TOOL,
+  WRITE_NODE_TOOL,
   SUMMARIZE_NEWS_ARTICLE_TOOL,
   UPDATE_REMINDER_TOOL,
 } from "@alfred/contracts";
@@ -80,6 +81,7 @@ export function conversationalToolSchemas(ports?: ConversationalPorts): ToolSche
   const tools: ToolSchema[] = [];
   if (ports?.reminders) tools.push(UPDATE_REMINDER_TOOL as unknown as ToolSchema);
   if (ports?.structuredMemory) tools.push(REMEMBER_MEMORY_TOOL as unknown as ToolSchema);
+  if (ports?.structuredMemory) tools.push(WRITE_NODE_TOOL as unknown as ToolSchema);
   if (ports?.weather) tools.push(GET_WEATHER_FORECAST_TOOL as unknown as ToolSchema);
   if (ports?.news) {
     tools.push(GET_NEWS_HEADLINES_TOOL as unknown as ToolSchema);
@@ -137,6 +139,9 @@ export async function applyConversationalTool(
   }
   if (toolName === "control_studio_lights" && ports.lights) {
     return { mode: "replace", speech: await applyLights(ports.lights, args) };
+  }
+  if (toolName === "write_node" && ports.structuredMemory) {
+    return { mode: "ack", speech: await applyWriteNode(ports.structuredMemory, args) };
   }
   if (toolName === "remember_memory" && ports.structuredMemory) {
     return { mode: "ack", speech: await applyRemember(ports.structuredMemory, args) };
@@ -314,6 +319,23 @@ async function applyLights(port: StudioLightsPort, args: Record<string, unknown>
   } catch (err) {
     console.error("[session] control_studio_lights failed:", err);
     return "I couldn't reach the lights just now.";
+  }
+}
+
+
+async function applyWriteNode(port: StructuredMemoryPort, args: Record<string, unknown>): Promise<string> {
+  const l0 = typeof args.l0 === "string" && args.l0.trim() ? args.l0.trim() : "";
+  if (!l0) return "";
+  try {
+    const result = await port.writeNode({
+      l0,
+      parentId: typeof args.parentId === "string" && args.parentId.trim() ? args.parentId.trim() : undefined,
+      slotType: typeof args.slotType === "string" && args.slotType.trim() ? args.slotType.trim() : undefined,
+    });
+    return result;
+  } catch (err) {
+    console.error("[session] write_node failed:", err);
+    return "I couldn't write that memory node just now.";
   }
 }
 

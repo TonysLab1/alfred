@@ -423,7 +423,9 @@ export class SessionOrchestrator {
         turnId: assistantTurn.id,
         role: "assistant",
         text: assistantTurn.text,
-        metadata: {},
+        metadata: {
+          userText: text,
+        },
       });
 
       if (this.fsm.getState() !== "Cancelled") {

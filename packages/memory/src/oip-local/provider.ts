@@ -243,15 +243,13 @@ export class OipLocalMemoryProvider implements MemoryProvider {
   }
 
   async commitTurn(commit: MemoryTurnCommit): Promise<void> {
-    // Assistant turns are no-ops — skip the exclusive queue.
-    if (commit.role === "assistant") return;
-
     await this.runExclusive(async () => {
       await this.ensureReadyUnlocked();
       const now = new Date().toISOString();
 
-      // Do not store assistant replies as graph memories — they polluted the graph as
-      // "assistant turn" nodes. User turns stay as episodic Observations for provenance.
+      const speaker = commit.role === "assistant" ? "assistant" : "user";
+      const turnName = commit.role === "assistant" ? "assistant turn" : "user turn";
+
       const observation = await this.packages.createPackage({
         type: "Observation",
         now,
@@ -261,7 +259,7 @@ export class OipLocalMemoryProvider implements MemoryProvider {
           schema: {
             "@type": "CreativeWork",
             text: commit.text,
-            name: "user turn",
+            name: turnName,
           },
           schemaType: "https://schema.org/CreativeWork",
           alfred: {
@@ -272,7 +270,7 @@ export class OipLocalMemoryProvider implements MemoryProvider {
           provenance: {
             sourceType: "conversation_turn",
             learnedAt: now,
-            speaker: "user",
+            speaker,
             extractionMethod: "commitTurn",
           },
           drefs: {

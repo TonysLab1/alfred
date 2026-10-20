@@ -307,6 +307,59 @@ export class OipLocalMemoryProvider implements MemoryProvider {
     return items.sort((a, b) => (b.updatedAt ?? "").localeCompare(a.updatedAt ?? ""));
   }
 
+  async writeNode(write: {
+    l0: string;
+    parentId?: string;
+    slotType?: string;
+    turnId?: string;
+    sessionId?: string;
+  }): Promise<string> {
+    // Deduplicate: check if a node with the same L0 text already exists via FTS
+    const hits = this.sqlite.searchFts(write.l0, 3);
+    for (const hit of hits) {
+      const rev = await this.packages.readCurrent(hit.record_id);
+      if (rev && rev.text?.trim() === write.l0.trim()) {
+        return hit.record_id;
+      }
+    }
+
+    const now = new Date().toISOString();
+    const drefs: Record<string, unknown> = {};
+    if (write.parentId) drefs.parent = write.parentId;
+    if (write.sessionId) drefs.session = write.sessionId;
+    if (write.turnId) drefs.turn = write.turnId;
+
+    const observation = await this.packages.createPackage({
+      type: "Observation",
+      now,
+      body: {
+        text: write.l0,
+        observedAt: now,
+        schema: {
+          "@type": "CreativeWork",
+          text: write.l0,
+          name: "graph node",
+        },
+        schemaType: "https://schema.org/CreativeWork",
+        alfred: {
+          visibility: "private",
+          confidence: 1,
+          assertionType: "explicit",
+          nodeType: "l0",
+          slotType: write.slotType,
+        },
+        provenance: {
+          sourceType: "conversation_extraction",
+          learnedAt: now,
+          extractionMethod: "write_node",
+        },
+        drefs,
+      },
+    });
+    this.indexRevisionUnlocked(observation);
+    return observation.logicalId;
+  }
+
   async edit(id: string, content: string): Promise<void> {
     await this.runExclusive(async () => {
       await this.ensureReadyUnlocked();

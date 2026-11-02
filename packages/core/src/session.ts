@@ -278,8 +278,7 @@ export class SessionOrchestrator {
     + 'Use slotType to indicate how the child relates to its parent (SOURCE, ELABORATION, CAUSE, MEANS, CONSEQUENCE, etc.).\n'
     + 'If no parent exists, write without parentId.\n'
     + 'If existing information only lives as a clause inside another node\'s L0 and needs its own node, write the extracted child and write the updated parent L0 using replaces_l0_in.\n'
-    + 'Do not use write_node for information already captured by remember_memory or present in the active context.\n'
-';
+    + 'Do not use write_node for information already captured by remember_memory or present in the active context.\n';
     this.turnImageDataUrls = input.imageDataUrls;
     this.turnOnToken = input.onToken;
     const state = this.fsm.getState();

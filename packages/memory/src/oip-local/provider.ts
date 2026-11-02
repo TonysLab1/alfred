@@ -266,6 +266,8 @@ export class OipLocalMemoryProvider implements MemoryProvider {
             visibility: "private",
             confidence: 1,
             assertionType: "explicit",
+            toolcallCount: commit.metadata?.toolcallCount ?? 0,
+            reasoningLineCount: commit.metadata?.reasoningLineCount ?? 0,
           },
           provenance: {
             sourceType: "conversation_turn",
@@ -275,6 +277,7 @@ export class OipLocalMemoryProvider implements MemoryProvider {
           },
           drefs: {
             session: commit.sessionId,
+            turnData: `${commit.sessionId}/${commit.turnId}`,
           },
         },
       });

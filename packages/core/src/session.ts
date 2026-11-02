@@ -404,7 +404,8 @@ export class SessionOrchestrator {
         agentResults: [],
       });
 
-      const assistantText = await this.generateWithFailover(prompt.messages, responseId, turn.id);
+      const track = { toolcallCount: 0 };
+      const assistantText = await this.generateWithFailover(prompt.messages, responseId, turn.id, "primary", track);
       await this.responseLedger.commit(responseId, assistantText);
 
       // Process any addenda that arrived during generation.
@@ -438,6 +439,8 @@ export class SessionOrchestrator {
         text: assistantTurn.text,
         metadata: {
           userText: text,
+          toolcallCount: track.toolcallCount,
+          reasoningLineCount: assistantTurn.text.split('\n').length,
         },
       });
 
@@ -853,6 +856,7 @@ export class SessionOrchestrator {
     responseId: string,
     turnId: string,
     segmentKind: "primary" | "addendum" = "primary",
+    track?: { toolcallCount: number },
   ): Promise<string> {
     this.isGenerating = true;
     this.generationAbort = new AbortController();
@@ -903,6 +907,7 @@ export class SessionOrchestrator {
             }
             if (chunk.type === "tool_call") {
               toolCall = { toolName: chunk.toolName, toolArgs: chunk.toolArgs };
+              if (track) track.toolcallCount += 1;
             }
           }
           const streamed = text;

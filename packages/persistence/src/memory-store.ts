@@ -69,13 +69,18 @@ export class InMemorySessionRepository implements SessionRepository {
 
 export class InMemoryTurnRepository implements TurnRepository {
   private readonly store = new Map<string, ConversationTurn[]>();
+  private readonly byId = new Map<string, ConversationTurn>();
   async append(turn: ConversationTurn): Promise<void> {
     const list = this.store.get(turn.sessionId) ?? [];
     list.push(turn);
     this.store.set(turn.sessionId, list);
+    this.byId.set(turn.id, turn);
   }
   async listBySession(sessionId: string): Promise<ConversationTurn[]> {
     return [...(this.store.get(sessionId) ?? [])];
+  }
+  async get(id: string): Promise<ConversationTurn | undefined> {
+    return this.byId.get(id);
   }
 }
 

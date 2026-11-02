@@ -41,6 +41,7 @@ export interface SessionRepository {
 export interface TurnRepository {
   append(turn: ConversationTurn): Promise<void>;
   listBySession(sessionId: string): Promise<ConversationTurn[]>;
+  get(id: string): Promise<ConversationTurn | undefined>;
 }
 
 export interface ResponseLedgerRepository {

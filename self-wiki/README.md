@@ -68,10 +68,34 @@ question:
 - **Cross-links are relative** so the wiki is traversable both on disk and
   after ingestion.
 
-## Status
+## Caveats
 
-Authored 2026-11-02 against branch `feat/memory-graph-nodes`. Alfred is under
-active development — this wiki describes the code as it was read, not a frozen
-spec. When a document and the code disagree, the code is what runs; see
-[operations/change-and-verification.md](operations/change-and-verification.md)
-for how to resolve that.
+**This wiki is commits-only right now.** Alfred's current tool surface has no
+`read_file` or `open_memory` tool, so no running session can open these files
+directly, and no routing instruction in SOUL.md yet points at them. The wiki is
+an authored corpus on disk; it is not reachable at runtime. See the Software
+Craft project at `vault/projects/2026-11-02-software-craft/` — Project A covers
+the tools that will make these files readable by a running Alfred session.
+
+**The wiki may be stale.** Check the version marker below against the current
+`origin/main` tip — if upstream has added significant new code, the wiki's
+descriptions of the tool surface, memory system, and runtime may need updating.
+
+## Version
+
+Authoring commit: `cc7f7ec` on `feat/memory-graph-nodes` (2026-11-03)
+Upstream at authoring: `b38643b`
+Upstream merged: `6425b55` (2026-11-03) — 182 files, +20,615/-971
+  Adds graph-report.ts (509 lines), audio-note-ingest (309 lines), x-ingest
+  expansion, calculate/log_medicine/get_fitness_* tools, add_briefing_module,
+  and note stills. **Not yet reflected in the wiki.**
+
+To check drift against upstream:
+```bash
+git diff b38643b..origin/main --stat | head -15
+```
+
+To check drift since the wiki was authored:
+```bash
+git diff cc7f7ec..origin/main --stat | grep -v self-wiki/
+```

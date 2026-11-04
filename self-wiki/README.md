@@ -70,12 +70,7 @@ question:
 
 ## Caveats
 
-**This wiki is commits-only right now.** Alfred's current tool surface has no
-`read_file` or `open_memory` tool, so no running session can open these files
-directly, and no routing instruction in SOUL.md yet points at them. The wiki is
-an authored corpus on disk; it is not reachable at runtime. See the Software
-Craft project at `vault/projects/2026-11-02-software-craft/` — Project A covers
-the tools that will make these files readable by a running Alfred session.
+**This wiki is ingested into long-term memory under the Self-Knowledge Wiki source.** The companion SOUL.md routes toward these files, and the `read_file` and `open_memory` tools are available for direct file access and memory record inspection. The wiki is reachable at runtime through both search memory and direct file reads.
 
 **The wiki may be stale.** Check the version marker below against the current
 `origin/main` tip — if upstream has added significant new code, the wiki's
